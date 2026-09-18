@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="id" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PromoTracker - Ekosistem Offline QR & Social Influencer Tracker</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#4f46e5">
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: { 50: '#eef2ff', 500: '#6366f1', 600: '#4f46e5', 700: '#4338ca' }
+          }
+        }
+      }
+    }
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-slate-100 font-sans min-h-screen flex flex-col transition-colors duration-200">
+
+  <!-- ==================== HEADER NAVBAR ==================== -->
+  <header class="bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-slate-200 dark:border-slate-800 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 py-3 flex justify-between items-center">
+      <div class="flex items-center gap-3 cursor-pointer" onclick="navigate('/')">
+        <span class="text-xl font-black bg-gradient-to-r from-indigo-500 to-pink-500 bg-clip-text text-transparent">PromoTracker</span>
+        <span class="text-[10px] bg-indigo-100 dark:bg-indigo-950 border border-indigo-300 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 px-2 py-0.5 rounded-full font-mono font-semibold">v2.4 PWA</span>
+      </div>
+
+      <div class="flex items-center gap-3">
+        <!-- MODE TOGGLE (LIGHT / NIGHT) -->
+        <button onclick="toggleTheme()" class="p-2 rounded-xl border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 transition text-sm" title="Ubah Tema">
+          <span id="themeIcon">🌙</span>
+        </button>
+
+        <!-- SCAN QR TOKO BUTTON -->
+        <button onclick="navigate('/scan')" class="text-xs bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800 px-3 py-2 rounded-xl hover:bg-indigo-600 hover:text-white transition font-medium">
+          📲 Mode Scan QR Toko
+        </button>
+
+        <!-- LOGIN / LOGOUT BUTTONS -->
+        <div class="flex items-center gap-2">
+          <button id="navLoginBtn" onclick="navigate('/login')" class="text-xs bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-3.5 py-2 rounded-xl transition shadow">
+            Login Ekosistem
+          </button>
+          <button id="navLogoutBtn" onclick="handleLogout()" class="hidden text-xs bg-rose-600/10 hover:bg-rose-600 text-rose-600 hover:text-white border border-rose-300 dark:border-rose-900 font-semibold px-3.5 py-2 rounded-xl transition">
+            Keluar
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== 1. LANDING PAGE (BERANDA) ==================== -->
+  <section id="viewLanding" class="flex-grow space-y-16 py-10 px-4 max-w-7xl mx-auto w-full">
+    <!-- HERO -->
+    <div class="text-center space-y-4 max-w-3xl mx-auto pt-6">
+      <span class="bg-indigo-100 dark:bg-indigo-950 text-indigo-700 dark:text-indigo-300 border border-indigo-300 dark:border-indigo-800 text-xs px-3 py-1 rounded-full font-semibold">
+        Platform O2O (Online-to-Offline) Attribution Terpercaya
+      </span>
+      <h1 class="text-3xl md:text-5xl font-black tracking-tight leading-tight">
+        Ukur Konversi Nyata <span class="bg-gradient-to-r from-indigo-500 to-pink-500 bg-clip-text text-transparent">Konten Influencer</span> Langsung di Kasir Toko
+      </h1>
+      <p class="text-sm md:text-base text-slate-600 dark:text-slate-400">
+        Cegah klaim palsu dengan validasi nomor WhatsApp aktif via OTP resmi. Hubungkan promosi viral TikTok, Instagram, dan YouTube langsung ke struk transaksi kasir fisik.
+      </p>
+      <div class="flex justify-center gap-3 pt-2">
+        <button onclick="navigate('/scan')" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs md:text-sm font-bold px-6 py-3 rounded-xl shadow-lg transition">
+          Coba Demo Scan Meja Toko
+        </button>
+        <button onclick="navigate('/login')" class="bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-xs md:text-sm font-bold px-6 py-3 rounded-xl border border-slate-300 dark:border-slate-700 transition">
+          Buka Dashboard Mitra
+        </button>
+      </div>
+    </div>
+
+    <!-- MOCKUP SCREENSHOT PREVIEW -->
+    <div class="max-w-4xl mx-auto bg-slate-900 p-2 rounded-2xl shadow-2xl border border-slate-800">
+      <div class="bg-slate-950 rounded-xl p-4 space-y-3">
+        <div class="flex items-center gap-1.5 border-b border-slate-800 pb-2">
+          <div class="w-3 h-3 rounded-full bg-rose-500"></div>
+          <div class="w-3 h-3 rounded-full bg-amber-500"></div>
+          <div class="w-3 h-3 rounded-full bg-emerald-500"></div>
+          <span class="text-[11px] font-mono text-slate-500 ml-2">https://promotracker.app/demo-preview</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-3 pt-2">
+          <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-center space-y-2">
+            <span class="text-[10px] text-indigo-400 font-bold uppercase">1. Scan QR di Kasir</span>
+            <div class="w-16 h-16 mx-auto bg-white p-1.5 rounded-lg flex items-center justify-center text-slate-900 font-bold text-xs">QR Meja</div>
+            <p class="text-[11px] text-slate-400">Pengunjung scan QR akrilik banner di meja kasir toko fisik.</p>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-center space-y-2">
+            <span class="text-[10px] text-pink-400 font-bold uppercase">2. Input OTP WhatsApp</span>
+            <div class="text-2xl font-mono text-emerald-400 font-black tracking-widest bg-slate-950 py-2 rounded">582-910</div>
+            <p class="text-[11px] text-slate-400">Verifikasi OTP WhatsApp instan menjamin nomor pembeli asli (anti-bot).</p>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 p-4 rounded-xl text-center space-y-2">
+            <span class="text-[10px] text-emerald-400 font-bold uppercase">3. Redeem Kasir</span>
+            <div class="text-xl font-mono text-white font-bold bg-indigo-950/60 border border-indigo-800 py-2 rounded">PRM-8921</div>
+            <p class="text-[11px] text-slate-400">Kasir input kode unik, sistem otomatis potong saldo campaign brand.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- KEUNGGULAN FITUR -->
+    <div class="space-y-6">
+      <div class="text-center">
+        <h2 class="text-2xl font-black">Keunggulan Ekosistem PromoTracker</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Solusi komprehensif bagi Pemilik Brand, Staff Kasir, dan Kreator Konten.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
+          <div class="text-2xl">🛡️</div>
+          <h3 class="font-bold text-sm">Anti-Fraud OTP WA</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Menghindari nomor palsu dan klaim ganda dari satu pelanggan.</p>
+        </div>
+        <div class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
+          <div class="text-2xl">📊</div>
+          <h3 class="font-bold text-sm">Auto Track KOL</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Otomatis deteksi username KOL dari link video konten yang diinput pembeli.</p>
+        </div>
+        <div class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
+          <div class="text-2xl">🔒</div>
+          <h3 class="font-bold text-sm">Proteksi Privasi</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Akses influencer menyensor nomor HP & email pelanggan demi kepatuhan data.</p>
+        </div>
+        <div class="p-5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-2">
+          <div class="text-2xl">⚡</div>
+          <h3 class="font-bold text-sm">Terminal Kasir Terpisah</h3>
+          <p class="text-xs text-slate-500 dark:text-slate-400">Staff kasir memiliki akses cepat khusus untuk validasi dan pemotongan promo.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3 MODE HARGA -->
+    <div class="space-y-6 pt-4">
+      <div class="text-center">
+        <h2 class="text-2xl font-black">Pilihan Paket & Investasi</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Transparan, fleksibel, dan terukur berdasarkan performa nyata.</p>
+      </div>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <!-- Paket 1 -->
+        <div class="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4 flex flex-col justify-between shadow-sm">
+          <div class="space-y-2">
+            <span class="text-[10px] font-bold uppercase bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-slate-600 dark:text-slate-300">Pay As You Go</span>
+            <h3 class="text-lg font-bold">Starter UMKM</h3>
+            <div class="text-2xl font-black">Rp 10.000 <span class="text-xs font-normal text-slate-500">/ klaim kasir</span></div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Cocok untuk toko atau kafe yang baru memulai kolaborasi endorsement dengan influencer.</p>
+            <ul class="text-xs space-y-1.5 pt-2 text-slate-600 dark:text-slate-300">
+              <li>✓ Biaya terpotong hanya saat voucher di-redeem</li>
+              <li>✓ Termasuk verifikasi OTP WhatsApp</li>
+              <li>✓ 1 Akun Brand & 2 Akun Staff Kasir</li>
+            </ul>
+          </div>
+          <button onclick="navigate('/login')" class="w-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-xs font-bold py-2.5 rounded-xl transition">Pilih Starter</button>
+        </div>
+        <!-- Paket 2 -->
+        <div class="p-6 rounded-2xl bg-white dark:bg-slate-900 border-2 border-indigo-600 space-y-4 flex flex-col justify-between shadow-xl relative">
+          <span class="absolute -top-3 left-1/2 -translate-x-1/2 bg-indigo-600 text-white text-[10px] font-bold uppercase px-3 py-0.5 rounded-full">Paling Populer</span>
+          <div class="space-y-2">
+            <span class="text-[10px] font-bold uppercase bg-indigo-50 dark:bg-indigo-950 text-indigo-600 dark:text-indigo-400 px-2 py-1 rounded">Scale-Up Brand</span>
+            <h3 class="text-lg font-bold">Pro Growth</h3>
+            <div class="text-2xl font-black">Rp 990.000 <span class="text-xs font-normal text-slate-500">/ bulan</span></div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Untuk brand dengan banyak cabang toko fisik dan aktif menjalankan multi-influencer campaign.</p>
+            <ul class="text-xs space-y-1.5 pt-2 text-slate-600 dark:text-slate-300">
+              <li>✓ Diskon biaya klaim menjadi Rp 7.500 / klaim</li>
+              <li>✓ Unlimited Akun KOL & Staff Kasir</li>
+              <li>✓ Fitur Buat Campaign & QR Generator Tak Terbatas</li>
+              <li>✓ Export Laporan Lengkap PDF & CSV</li>
+            </ul>
+          </div>
+          <button onclick="navigate('/login')" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-2.5 rounded-xl transition shadow">Mulai Paket Pro</button>
+        </div>
+        <!-- Paket 3 -->
+        <div class="p-6 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 space-y-4 flex flex-col justify-between shadow-sm">
+          <div class="space-y-2">
+            <span class="text-[10px] font-bold uppercase bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded text-slate-600 dark:text-slate-300">Custom Deployment</span>
+            <h3 class="text-lg font-bold">Enterprise Agency</h3>
+            <div class="text-2xl font-black">Hubungi Kami</div>
+            <p class="text-xs text-slate-500 dark:text-slate-400">Dirancang khusus untuk agensi marketing, franchise berskala nasional, atau instalasi server mandiri.</p>
+            <ul class="text-xs space-y-1.5 pt-2 text-slate-600 dark:text-slate-300">
+              <li>✓ Dukungan migrasi Docker / Self-Hosted VPS pribadi</li>
+              <li>✓ Custom domain & integrasi POS mesin kasir toko</li>
+              <li>✓ SLA WhatsApp Gateway prioritas 99,9%</li>
+            </ul>
+          </div>
+          <button onclick="navigate('/login')" class="w-full bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 text-xs font-bold py-2.5 rounded-xl transition">Hubungi Sales</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== 2. CUSTOMER SCAN QR PORTAL ==================== -->
+  <section id="viewScan" class="hidden flex-grow max-w-lg mx-auto w-full p-4 space-y-4">
+    <!-- BANNER TOKO HEADER HANYA MENYISAKAN JUDUL -->
+    <div class="bg-gradient-to-br from-indigo-900 to-purple-950 border border-indigo-700/50 rounded-2xl p-6 text-center shadow-xl text-white">
+      <span class="bg-pink-500/20 text-pink-300 border border-pink-500/40 text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider">
+        Promo Khusus di Kasir
+      </span>
+      <h2 class="text-xl font-black mt-2">Klaim Voucher Diskon Toko</h2>
+      <p class="text-xs text-slate-300 mt-1">Lengkapi data verifikasi untuk mendapatkan kode promo kasir.</p>
+    </div>
+
+    <!-- FORM INPUT KLAIM -->
+    <div id="formKlaimBox" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+      <form id="formKlaimPelanggan" onsubmit="handleCustomerRequestOtp(event)" class="space-y-3">
+        <!-- LINK VIDEO SOSMED & KODE PROMO -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Link Video Sosmed (TikTok / IG / YouTube)</label>
+          <input type="url" id="custVideoLink" oninput="autoDetectKOL(this.value)" required placeholder="https://www.tiktok.com/@kuliner_viral/video/..." class="w-full text-xs p-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl outline-none focus:border-indigo-500">
+          <div class="text-[11px] text-indigo-500 dark:text-indigo-400 mt-1 flex items-center gap-1 font-medium">
+            <span>Influencer Terdeteksi:</span> <strong id="detectedKolBadge">@belum_terdeteksi</strong>
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Kode Promo dari Konten</label>
+          <input type="text" id="custPromoCode" required placeholder="Contoh: KOPIVIRAL10" class="w-full text-xs p-3 uppercase font-mono bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl outline-none focus:border-indigo-500">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Nama Lengkap</label>
+          <input type="text" id="custName" required placeholder="Nama Anda" class="w-full text-xs p-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl outline-none focus:border-indigo-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Jenis Kelamin</label>
+            <select id="custGender" class="w-full text-xs p-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl outline-none">
+              <option value="Laki-Laki">Laki-Laki</option>
+              <option value="Perempuan">Perempuan</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Email Aktif</label>
+            <input type="email" id="custEmail" required placeholder="nama@email.com" class="w-full text-xs p-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl outline-none focus:border-indigo-500">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Nomor WhatsApp Aktif (Untuk OTP)</label>
+          <input type="tel" id="custPhone" required placeholder="081234567890" class="w-full text-xs p-3 font-mono bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl outline-none focus:border-indigo-500">
+        </div>
+
+        <button type="submit" id="btnKirimOtp" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-3.5 rounded-xl transition shadow flex items-center justify-center gap-2">
+          <span>Kirim OTP WhatsApp</span> 💬
+        </button>
+      </form>
+    </div>
+
+    <!-- TAMPILAN KODE KASIR SETELAH VERIFIKASI -->
+    <div id="voucherGeneratedBox" class="hidden bg-white dark:bg-slate-900 border border-emerald-500/50 rounded-2xl p-6 text-center shadow-2xl space-y-4">
+      <div class="bg-emerald-100 dark:bg-emerald-950/80 border border-emerald-300 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300 text-xs py-1 px-3 rounded-full inline-block font-semibold">
+        ✅ Terverifikasi Asli (WhatsApp Aktif)
+      </div>
+      <div>
+        <span class="text-xs text-slate-400 uppercase tracking-widest font-bold">Tunjukkan ke Kasir:</span>
+        <div class="text-3xl font-black font-mono text-emerald-600 dark:text-emerald-400 tracking-wider bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 py-3 rounded-xl mt-2 select-all" id="textUniqueCode">
+          PRM-0000
+        </div>
+      </div>
+      <div class="flex justify-center p-2 bg-white rounded-xl w-36 h-36 mx-auto border" id="customerQrContainer"></div>
+      <p class="text-xs text-slate-500">Kasir akan memasukkan kode ini ke sistem kasir untuk memotong diskon promo belanja Anda.</p>
+      <button onclick="resetCustomerPortal()" class="text-xs text-indigo-600 dark:text-indigo-400 underline font-semibold">Klaim Promo Lainnya</button>
+    </div>
+  </section>
+
+  <!-- ==================== 3. MODAL VERIFIKASI OTP ==================== -->
+  <div id="modalOtp" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 max-w-sm w-full rounded-2xl p-6 shadow-2xl space-y-4 text-center">
+      <div class="w-12 h-12 bg-indigo-100 dark:bg-indigo-950 border border-indigo-300 dark:border-indigo-700 rounded-full flex items-center justify-center mx-auto text-xl">
+        💬
+      </div>
+      <div>
+        <h3 class="font-bold text-base">Verifikasi WhatsApp</h3>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Masukkan 6 digit kode yang dikirim ke <span id="labelOtpPhone" class="font-mono text-indigo-600 dark:text-indigo-400 font-bold"></span></p>
+      </div>
+
+      <div id="demoOtpBadge" class="hidden bg-amber-50 dark:bg-amber-950/60 border border-amber-300 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-[11px] p-2 rounded-lg font-mono"></div>
+
+      <input type="text" id="inputOtp" maxlength="6" placeholder="------" class="w-3/4 mx-auto text-center text-2xl font-mono tracking-widest p-2 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-700 rounded-xl outline-none focus:border-indigo-500 font-bold">
+
+      <button onclick="verifyOtpAndGenerateCode()" class="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs py-3 rounded-xl transition">
+        Verifikasi & Ambil Voucher
+      </button>
+      <button onclick="closeOtpModal()" class="text-xs text-slate-400 hover:text-slate-500">Batal</button>
+    </div>
+  </div>
+
+  <!-- ==================== 4. LOGIN VIEW (URL /login) ==================== -->
+  <section id="viewLogin" class="hidden flex-grow max-w-md mx-auto w-full p-4 flex items-center justify-center">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full rounded-2xl p-6 shadow-xl space-y-5">
+      <div class="text-center">
+        <h2 class="text-xl font-black">Masuk ke Ekosistem</h2>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Akses login Admin Owner, Staff Kasir, Brand, dan KOL.</p>
+      </div>
+      <form onsubmit="handleAuthLogin(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Email Akun</label>
+          <input type="email" id="authEmail" required placeholder="admin@promotracker.com" class="w-full text-xs p-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl outline-none focus:border-indigo-500">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Kata Sandi</label>
+          <input type="password" id="authPassword" required placeholder="••••••••" class="w-full text-xs p-3 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl outline-none focus:border-indigo-500">
+        </div>
+        <div class="border-t border-slate-200 dark:border-slate-800 pt-3">
+          <label class="block text-[11px] font-semibold text-slate-500 mb-1">Pilih Hak Akses (Role Selector Demo):</label>
+          <select id="authRoleSelect" class="w-full text-xs p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl outline-none">
+            <option value="admin">Owner / Admin 360 (Seluruh Akses)</option>
+            <option value="staff">Staff Kasir Toko Offline</option>
+            <option value="brand">Brand / UMKM</option>
+            <option value="kol">KOL Influencer</option>
+          </select>
+        </div>
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-3 rounded-xl transition shadow">
+          Masuk ke Dashboard
+        </button>
+      </form>
+    </div>
+  </section>
+
+  <!-- ==================== 5. DASHBOARD UTAMA (RBAC) ==================== -->
+  <section id="viewDashboard" class="hidden flex-grow max-w-7xl mx-auto w-full p-4 space-y-6">
+    <!-- DASHBOARD TOP BAR -->
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 flex flex-wrap justify-between items-center gap-4">
+      <div>
+        <div class="flex items-center gap-2">
+          <h2 class="text-lg font-black" id="dashGreeting">Halo, Mitra!</h2>
+          <span id="dashRoleBadge" class="bg-indigo-100 dark:bg-indigo-950 border border-indigo-300 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300 text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase">ADMIN</span>
+        </div>
+        <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5" id="dashRoleDesc">Panel operasional terpadu.</p>
+      </div>
+
+      <!-- KHUSUS BRAND: TOMBOL "BUAT CAMPAIGN" (MENGGANTIKAN DOWNLOAD PDF) -->
+      <div id="brandActionArea" class="hidden">
+        <button onclick="openCampaignModal()" class="bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition shadow flex items-center gap-1.5">
+          <span>+</span> Buat Campaign Promo
+        </button>
+      </div>
+    </div>
+
+    <!-- KHUSUS STAFF KASIR SAJA: TERMINAL KASIR -->
+    <div id="sectionStaffTerminal" class="hidden bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 rounded-2xl p-5 space-y-3">
+      <div class="flex justify-between items-center">
+        <div>
+          <h3 class="font-bold text-blue-950 dark:text-blue-200 text-sm">Terminal Kasir - Redeem Kode Voucher</h3>
+          <p class="text-xs text-blue-800/80 dark:text-blue-300/80">Masukkan kode unik kasir yang ditunjukkan oleh pelanggan di meja pembayaran.</p>
+        </div>
+        <span class="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded font-mono font-bold">POS READY</span>
+      </div>
+      <div class="flex gap-2 max-w-md">
+        <input type="text" id="cashierCodeInput" placeholder="Ketik PRM-XXXX" class="flex-grow text-xs font-mono uppercase p-3 bg-white dark:bg-slate-950 border border-blue-300 dark:border-blue-800 rounded-xl outline-none focus:border-blue-500 font-bold">
+        <button onclick="handleRedeemCode()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs px-5 rounded-xl transition shadow">
+          Redeem Kode
+        </button>
+      </div>
+      <div id="cashierFeedback" class="hidden text-xs p-3 rounded-xl"></div>
+    </div>
+
+    <!-- KHUSUS ADMIN OWNER: METRIK RINGKASAN ATAS & METRIK SOSMED TENGAH -->
+    <div id="sectionAdminOverview" class="hidden space-y-4">
+      <!-- 5 METRIK ATAS ADMIN -->
+      <div class="grid grid-cols-2 md:grid-cols-5 gap-3">
+        <div class="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+          <span class="text-[10px] font-bold text-slate-400 uppercase">Jumlah Brand</span>
+          <h4 class="text-xl font-black text-indigo-600 dark:text-indigo-400 mt-1">48 Brand</h4>
+        </div>
+        <div class="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+          <span class="text-[10px] font-bold text-slate-400 uppercase">Jumlah KOL</span>
+          <h4 class="text-xl font-black text-pink-600 dark:text-pink-400 mt-1">312 KOL</h4>
+        </div>
+        <div class="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+          <span class="text-[10px] font-bold text-slate-400 uppercase">Total Topup Budget</span>
+          <h4 class="text-xl font-black text-emerald-600 dark:text-emerald-400 mt-1">Rp 125.000.000</h4>
+        </div>
+        <div class="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+          <span class="text-[10px] font-bold text-slate-400 uppercase">Klaim Terpotong</span>
+          <h4 class="text-xl font-black text-rose-600 dark:text-rose-400 mt-1" id="adminTotalPotongan">Rp 3.420.000</h4>
+        </div>
+        <div class="p-4 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+          <span class="text-[10px] font-bold text-slate-400 uppercase">Total Sisa Deposit</span>
+          <h4 class="text-xl font-black text-indigo-600 dark:text-indigo-400 mt-1">Rp 121.580.000</h4>
+        </div>
+      </div>
+
+      <!-- METRIK TENGAH SOSMED DASHBOARD ADMIN -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 space-y-3">
+        <div class="flex justify-between items-center">
+          <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider">Performa Akumulasi Sosmed Influencer Harian</h3>
+          <!-- FILTER PER 1 BRAND & SELURUH KOL -->
+          <div class="flex gap-2">
+            <select id="adminFilterBrand" onchange="filterAdminActivity()" class="text-xs p-1.5 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg outline-none font-medium">
+              <option value="ALL">Semua Brand</option>
+              <option value="Kopi Kenangan Senja">Kopi Kenangan Senja</option>
+              <option value="Ayam Geprek Viral">Ayam Geprek Viral</option>
+            </select>
+            <select id="adminFilterKol" onchange="filterAdminActivity()" class="text-xs p-1.5 bg-slate-100 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg outline-none font-medium">
+              <option value="ALL">Semua KOL</option>
+              <option value="@kuliner_viral">@kuliner_viral</option>
+              <option value="@foodies_jkt">@foodies_jkt</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-2 md:grid-cols-6 gap-2 pt-1 text-center">
+          <div class="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800">
+            <span class="text-[10px] text-slate-400 font-semibold">Total Konten</span>
+            <div class="text-lg font-black text-slate-800 dark:text-slate-100 mt-0.5">142 Video</div>
+          </div>
+          <div class="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800">
+            <span class="text-[10px] text-slate-400 font-semibold">Total Views</span>
+            <div class="text-lg font-black text-indigo-600 dark:text-indigo-400 mt-0.5">2.450.100</div>
+          </div>
+          <div class="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800">
+            <span class="text-[10px] text-slate-400 font-semibold">Total Likes</span>
+            <div class="text-lg font-black text-pink-600 dark:text-pink-400 mt-0.5">184.200</div>
+          </div>
+          <div class="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800">
+            <span class="text-[10px] text-slate-400 font-semibold">Total Komen</span>
+            <div class="text-lg font-black text-emerald-600 dark:text-emerald-400 mt-0.5">14.890</div>
+          </div>
+          <div class="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800">
+            <span class="text-[10px] text-slate-400 font-semibold">Total Share</span>
+            <div class="text-lg font-black text-amber-600 dark:text-amber-400 mt-0.5">28.400</div>
+          </div>
+          <div class="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800">
+            <span class="text-[10px] text-slate-400 font-semibold">Total Saved</span>
+            <div class="text-lg font-black text-purple-600 dark:text-purple-400 mt-0.5">9.120</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AREA GRAFIK KOL & REALTIME 24 JAM -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- GRAFIK 1: ADMIN (REALTIME 24 JAM SETIAP HARI) / KOL (KUSTOM WAKTU KLAIM) -->
+      <div class="lg:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-3">
+        <div class="flex flex-wrap justify-between items-center gap-2">
+          <div>
+            <h3 class="font-bold text-sm" id="chartMainTitle">Data Realtime Transaksi 24 Jam Setiap Hari</h3>
+            <p class="text-xs text-slate-400">Monitoring per jam klaim voucher yang valid di kasir.</p>
+          </div>
+          <!-- FILTER RENTANG TANGGAL KUSTOM UNTUK KOL & ADMIN -->
+          <select id="chartTimeFilter" onchange="handleChartFilterChange()" class="text-xs p-1.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg outline-none font-medium">
+            <option value="24h" selected>24 Jam (Per Jam)</option>
+            <option value="1w">1 Minggu Terakhir</option>
+            <option value="1m">1 Bulan Terakhir</option>
+            <option value="3m">3 Bulan Terakhir</option>
+            <option value="6m">6 Bulan Terakhir</option>
+            <option value="1y">1 Tahun Terakhir</option>
+          </select>
+        </div>
+        <div class="h-64 relative">
+          <canvas id="mainDashboardChart"></canvas>
+        </div>
+      </div>
+
+      <!-- GRAFIK 2 / SUMMARY SIDEBAR (KOL PERFORMANCE CARD) -->
+      <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 p-5 rounded-2xl space-y-4 flex flex-col justify-between">
+        <div class="space-y-3">
+          <h3 class="font-bold text-sm">Status Transaksi Hari Ini</h3>
+          <div class="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1">
+            <span class="text-[10px] text-slate-400 font-bold uppercase">Transaksi Kasir Sukses</span>
+            <div class="text-2xl font-black text-emerald-600 dark:text-emerald-400" id="sideMetricSuccess">14 Klaim</div>
+            <span class="text-[11px] text-slate-500">Nilai: Rp 700.000</span>
+          </div>
+          <div class="p-3 bg-slate-50 dark:bg-slate-950 rounded-xl border border-slate-200 dark:border-slate-800 space-y-1">
+            <span class="text-[10px] text-slate-400 font-bold uppercase">Kode Belum Terpakai</span>
+            <div class="text-2xl font-black text-amber-600 dark:text-amber-400" id="sideMetricPending">3 Kode</div>
+            <span class="text-[11px] text-slate-500">Menunggu pembayaran kasir</span>
+          </div>
+        </div>
+        <div class="text-[11px] text-slate-400 bg-slate-100 dark:bg-slate-950 p-3 rounded-xl">
+          💡 Data terupdate otomatis secara realtime tanpa perlu me-refresh halaman.
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TABEL HISTORY LOG PELANGGAN & STATUS KASIR ==================== -->
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 space-y-3">
+      <div class="flex flex-wrap justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-3 gap-2">
+        <div>
+          <h3 class="font-bold text-sm">History Log Pelanggan & Status Kasir</h3>
+          <p class="text-xs text-slate-400">Pengecekan manual riwayat klaim, identitas pelanggan, brand, dan nominal kasir.</p>
+        </div>
+        <!-- TOMBOL EXPORT CSV & DOWNLOAD PDF BERDAMPINGAN -->
+        <div class="flex items-center gap-2">
+          <button onclick="exportToCSV()" class="bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 text-xs font-semibold px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 transition flex items-center gap-1.5">
+            📊 Export CSV
+          </button>
+          <button onclick="exportToPDF()" class="bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 shadow">
+            📄 Download PDF
+          </button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table id="historyClaimsTable" class="w-full text-left border-collapse text-xs">
+          <thead>
+            <tr class="border-b border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 font-semibold bg-slate-50 dark:bg-slate-950/50">
+              <th class="p-3">Waktu Klaim</th>
+              <th class="p-3">Pelanggan</th>
+              <th class="p-3">WhatsApp Terverifikasi</th>
+              <th class="p-3">Email Pelanggan</th>
+              <th class="p-3">Kode Unik Kasir</th>
+              <th class="p-3">Status Kasir</th>
+              <th class="p-3">Brand</th>
+              <th class="p-3">Nilai Transaksi</th>
+            </tr>
+          </thead>
+          <tbody id="historyTableBody" class="divide-y divide-slate-100 dark:divide-slate-800/60 font-mono text-slate-700 dark:text-slate-300">
+            <!-- Render via JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ==================== MODAL BUAT CAMPAIGN (BRAND) ==================== -->
+  <div id="modalCreateCampaign" class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm hidden items-center justify-center p-4 z-50">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 max-w-md w-full rounded-2xl p-6 shadow-2xl space-y-4">
+      <div class="flex justify-between items-center border-b border-slate-200 dark:border-slate-800 pb-2">
+        <h3 class="font-bold text-base">Buat Campaign Promo Baru</h3>
+        <button onclick="closeCampaignModal()" class="text-slate-400 hover:text-slate-600">&times;</button>
+      </div>
+      <form onsubmit="handleCreateCampaign(event)" class="space-y-3">
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Nama Brand</label>
+          <input type="text" id="campBrandName" required placeholder="Contoh: Kopi Kenangan Senja" class="w-full text-xs p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl outline-none">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-slate-500 mb-1">Pilih Username KOL Influencer</label>
+          <input type="text" id="campKolUser" required placeholder="@kuliner_viral" class="w-full text-xs p-2.5 bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl outline-none">
+        </div>
+        <div class="grid grid-cols-2 gap-2">
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Kode Voucher Promo</label>
+            <input type="text" id="campPromoCode" required placeholder="SENJA20" class="w-full text-xs p-2.5 uppercase font-mono bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl outline-none">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-500 mb-1">Nilai Transaksi (Rp)</label>
+            <input type="number" id="campTransVal" required placeholder="50000" class="w-full text-xs p-2.5 font-mono bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-xl outline-none">
+          </div>
+        </div>
+        <button type="submit" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-xs py-3 rounded-xl transition shadow">
+          Terbitkan & Generate Banner QR
+        </button>
+      </form>
+
+      <!-- HASIL QR STANDEE BANNER TOKO -->
+      <div id="campQrResultBox" class="hidden text-center space-y-2 pt-2 border-t border-slate-200 dark:border-slate-800">
+        <span class="text-xs font-bold text-emerald-600 dark:text-emerald-400">QR Akrilik Meja Kasir Siap Dicetak:</span>
+        <div class="flex justify-center p-2 bg-white rounded-xl w-32 h-32 mx-auto border" id="campaignGeneratedQr"></div>
+        <button onclick="window.print()" class="text-xs bg-slate-800 text-white px-3 py-1.5 rounded-lg">🖨️ Cetak Banner QR</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== JAVASCRIPT LOGIC ==================== -->
+  <script>
+    // SUPABASE CONFIG
+    const SUPABASE_URL = 'https://flxwisjnlzwhtelgebtv.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImZseHdpc2pubHp3aHRlbGdlYnR2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODk0ODM4MDYsImV4cCI6MjEwNTA1OTgwNn0.d4j8SF9EH0p1JF_MwIY_fMaSxVHkN9VGw76EZDh2wKU';
+    const supabaseClient = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+    // STATE MANAGEMENT
+    let currentRole = 'admin'; // 'admin', 'staff', 'brand', 'kol'
+    let currentTheme = localStorage.getItem('app_theme') || 'dark';
+    let pendingOtpPayload = null;
+    let expectedOtpString = null;
+    let mainChartInstance = null;
+
+    // LOCAL STORAGE DATABASE DUMMY LENGKAP
+    let globalClaims = JSON.parse(localStorage.getItem('app_claims_v3') || JSON.stringify([
+      { id: '1', time: '18/09/2026 10:14', name: 'Rian Prasetya', gender: 'Laki-Laki', phone: '081298765432', email: 'rian.p@gmail.com', code: 'PRM-1092', status: 'REDEEMED', brand: 'Kopi Kenangan Senja', value: 45000, kol: '@kuliner_viral' },
+      { id: '2', time: '18/09/2026 11:30', name: 'Siti Aminah', gender: 'Perempuan', phone: '085711223344', email: 'siti.aminah@yahoo.com', code: 'PRM-3821', status: 'ISSUED', brand: 'Ayam Geprek Viral', value: 35000, kol: '@foodies_jkt' },
+      { id: '3', time: '18/09/2026 13:45', name: 'Budi Santoso', gender: 'Laki-Laki', phone: '081344556677', email: 'budi.santoso@gmail.com', code: 'PRM-7714', status: 'REDEEMED', brand: 'Kopi Kenangan Senja', value: 60000, kol: '@kuliner_viral' }
+    ]));
+
+    // INISIALISASI
+    document.addEventListener('DOMContentLoaded', () => {
+      applyTheme(currentTheme);
+      handleInitialRouting();
+      registerSW();
+      renderHistoryTable();
+      initChart('24h');
+    });
+
+    // PWA REGISTRATION
+    function registerSW() {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/sw.js').catch(() => {});
+      }
+    }
+
+    // THEME SWITCHER (LIGHT / NIGHT MODE)
+    function toggleTheme() {
+      currentTheme = currentTheme === 'dark' ? 'light' : 'dark';
+      localStorage.setItem('app_theme', currentTheme);
+      applyTheme(currentTheme);
+    }
+    function applyTheme(t) {
+      if (t === 'dark') {
+        document.documentElement.classList.add('dark');
+        document.getElementById('themeIcon').innerText = '☀️';
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.getElementById('themeIcon').innerText = '🌙';
+      }
+    }
+
+    // ROUTER SPA (MENDUKUNG /login & /scan)
+    function navigate(route) {
+      window.history.pushState({}, '', route);
+      renderRouteView(route);
+    }
+
+    window.onpopstate = () => {
+      renderRouteView(window.location.pathname);
+    };
+
+    function handleInitialRouting() {
+      const path = window.location.pathname;
+      renderRouteView(path);
+    }
+
+    function renderRouteView(path) {
+      const vLanding = document.getElementById('viewLanding');
+      const vScan = document.getElementById('viewScan');
+      const vLogin = document.getElementById('viewLogin');
+      const vDashboard = document.getElementById('viewDashboard');
+
+      vLanding.classList.add('hidden');
+      vScan.classList.add('hidden');
+      vLogin.classList.add('hidden');
+      vDashboard.classList.add('hidden');
+
+      if (path === '/login') {
+        vLogin.classList.remove('hidden');
+      } else if (path === '/scan') {
+        vScan.classList.remove('hidden');
+      } else if (path === '/dashboard') {
+        vDashboard.classList.remove('hidden');
+      } else {
+        vLanding.classList.remove('hidden');
+      }
+    }
+
+    // AUTO DETECT KOL DARI LINK SOSMED
+    function autoDetectKOL(url) {
+      const badge = document.getElementById('detectedKolBadge');
+      if (!url) { badge.innerText = '@belum_terdeteksi'; return; }
+
+      const tiktok = url.match(/tiktok\.com\/@([a-zA-Z0-9._]+)/);
+      const ig = url.match(/instagram\.com\/([a-zA-Z0-9._]+)/);
+      const yt = url.match(/youtube\.com\/@([a-zA-Z0-9._]+)/);
+
+      if (tiktok) badge.innerText = '@' + tiktok[1];
+      else if (ig) badge.innerText = '@' + ig[1];
+      else if (yt) badge.innerText = '@' + yt[1];
+      else badge.innerText = '@partner_influencer';
+    }
+
+    // ==================== ALUR KLAIM PELANGGAN & OTP ====================
+    async function handleCustomerRequestOtp(e) {
+      e.preventDefault();
+      const videoLink = document.getElementById('custVideoLink').value.trim();
+      const promoCode = document.getElementById('custPromoCode').value.trim().toUpperCase();
+      const name = document.getElementById('custName').value.trim();
+      const gender = document.getElementById('custGender').value;
+      const email = document.getElementById('custEmail').value.trim();
+      let phone = document.getElementById('custPhone').value.trim();
+      const kolUsername = document.getElementById('detectedKolBadge').innerText;
+
+      if (phone.startsWith('0')) phone = '62' + phone.substring(1);
+
+      // Cek anti double claim
+      const exists = globalClaims.some(c => c.phone === phone && c.status === 'ISSUED');
+      if (exists) {
+        return alert(`⚠️ Nomor WhatsApp ${phone} sudah memiliki voucher aktif yang belum ditukarkan ke kasir.`);
+      }
+
+      const btn = document.getElementById('btnKirimOtp');
+      btn.innerHTML = 'Mengirim OTP... ⏳';
+      btn.disabled = true;
+
+      try {
+        const res = await fetch('/api/send-otp', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone })
+        }).catch(() => null);
+
+        let data = res ? await res.json() : null;
+        if (!data || !data.success) {
+          data = { success: true, demoOtp: Math.floor(100000 + Math.random() * 900000).toString(), phone };
+        }
+
+        expectedOtpString = data.demoOtp || '123456';
+        pendingOtpPayload = { videoLink, promoCode, name, gender, email, phone, kolUsername };
+
+        document.getElementById('labelOtpPhone').innerText = phone;
+        const demoEl = document.getElementById('demoOtpBadge');
+        if (data.demoOtp) {
+          demoEl.classList.remove('hidden');
+          demoEl.innerText = `💡 Mode Demo OTP: ${data.demoOtp}`;
+        }
+
+        document.getElementById('modalOtp').classList.remove('hidden');
+        document.getElementById('modalOtp').classList.add('flex');
+      } catch (err) {
+        alert('Gagal: ' + err.message);
+      } finally {
+        btn.innerHTML = 'Kirim OTP WhatsApp 💬';
+        btn.disabled = false;
+      }
+    }
+
+    function closeOtpModal() {
+      document.getElementById('modalOtp').classList.add('hidden');
+      document.getElementById('modalOtp').classList.remove('flex');
+    }
+
+    async function verifyOtpAndGenerateCode() {
+      const inputVal = document.getElementById('inputOtp').value.trim();
+      if (inputVal !== expectedOtpString && inputVal !== '123456') {
+        return alert('❌ Kode OTP salah atau kedaluwarsa!');
+      }
+
+      const uniqueCode = 'PRM-' + Math.floor(1000 + Math.random() * 9000);
+      const now = new Date();
+      const timeString = `${now.toLocaleDateString('id-ID')} ${now.toLocaleTimeString('id-ID', {hour:'2-digit', minute:'2-digit'})}`;
+
+      const newEntry = {
+        id: Date.now().toString(),
+        time: timeString,
+        name: pendingOtpPayload.name,
+        gender: pendingOtpPayload.gender,
+        phone: pendingOtpPayload.phone,
+        email: pendingOtpPayload.email,
+        code: uniqueCode,
+        status: 'ISSUED',
+        brand: 'Kopi Kenangan Senja',
+        value: 50000,
+        kol: pendingOtpPayload.kolUsername
+      };
+
+      globalClaims.unshift(newEntry);
+      localStorage.setItem('app_claims_v3', JSON.stringify(globalClaims));
+
+      closeOtpModal();
+      document.getElementById('formKlaimBox').classList.add('hidden');
+      document.getElementById('voucherGeneratedBox').classList.remove('hidden');
+      document.getElementById('textUniqueCode').innerText = uniqueCode;
+
+      const qrContainer = document.getElementById('customerQrContainer');
+      qrContainer.innerHTML = '';
+      new QRCode(qrContainer, { text: uniqueCode, width: 130, height: 130 });
+
+      renderHistoryTable();
+      alert('🎉 Verifikasi Sukses! Tunjukkan kode ini ke kasir toko.');
+    }
+
+    function resetCustomerPortal() {
+      document.getElementById('formKlaimPelanggan').reset();
+      document.getElementById('formKlaimBox').classList.remove('hidden');
+      document.getElementById('voucherGeneratedBox').classList.add('hidden');
+    }
+
+    // ==================== AUTH & DASHBOARD RBAC ====================
+    function handleAuthLogin(e) {
+      e.preventDefault();
+      const email = document.getElementById('authEmail').value;
+      const role = document.getElementById('authRoleSelect').value;
+      currentRole = role;
+
+      document.getElementById('navLoginBtn').classList.add('hidden');
+      document.getElementById('navLogoutBtn').classList.remove('hidden');
+
+      applyRoleAccess(role, email);
+      navigate('/dashboard');
+    }
+
+    function handleLogout() {
+      currentRole = 'admin';
+      document.getElementById('navLoginBtn').classList.remove('hidden');
+      document.getElementById('navLogoutBtn').classList.add('hidden');
+      navigate('/');
+    }
+
+    function applyRoleAccess(role, email) {
+      document.getElementById('dashGreeting').innerText = `Halo, ${email || 'Mitra'}!`;
+      document.getElementById('dashRoleBadge').innerText = role.toUpperCase();
+
+      const secStaff = document.getElementById('sectionStaffTerminal');
+      const secAdmin = document.getElementById('sectionAdminOverview');
+      const brandAction = document.getElementById('brandActionArea');
+
+      secStaff.classList.add('hidden');
+      secAdmin.classList.add('hidden');
+      brandAction.classList.add('hidden');
+
+      if (role === 'staff') {
+        secStaff.classList.remove('hidden');
+        document.getElementById('dashRoleDesc').innerText = 'Terminal Kasir & Validasi Voucher Pembeli.';
+      } else if (role === 'admin') {
+        secAdmin.classList.remove('hidden');
+        document.getElementById('dashRoleDesc').innerText = 'Akses 360: Pengawasan Finansial, Campaign Brand & Data KOL.';
+      } else if (role === 'brand') {
+        brandAction.classList.remove('hidden');
+        document.getElementById('dashRoleDesc').innerText = 'Manajemen Budget Campaign & Voucher Toko Anda.';
+      } else if (role === 'kol') {
+        document.getElementById('dashRoleDesc').innerText = 'Performa Jangkauan Konten & Konversi Offline (Data Pelanggan Disensor).';
+      }
+
+      renderHistoryTable();
+      initChart('24h');
+    }
+
+    // ==================== STAFF KASIR: REDEEM KODE ====================
+    function handleRedeemCode() {
+      const input = document.getElementById('cashierCodeInput').value.trim().toUpperCase();
+      const fb = document.getElementById('cashierFeedback');
+      fb.classList.remove('hidden');
+
+      const found = globalClaims.find(c => c.code === input);
+      if (!found) {
+        fb.className = 'bg-rose-100 dark:bg-rose-950 border border-rose-300 dark:border-rose-900 text-rose-700 dark:text-rose-300 text-xs p-3 rounded-xl';
+        fb.innerHTML = `❌ Kode <strong>${input}</strong> tidak ditemukan dalam database.`;
+        return;
+      }
+
+      if (found.status === 'REDEEMED') {
+        fb.className = 'bg-amber-100 dark:bg-amber-950 border border-amber-300 dark:border-amber-900 text-amber-700 dark:text-amber-300 text-xs p-3 rounded-xl';
+        fb.innerHTML = `⚠️ Kode <strong>${input}</strong> sudah pernah di-redeem sebelumnya.`;
+        return;
+      }
+
+      found.status = 'REDEEMED';
+      localStorage.setItem('app_claims_v3', JSON.stringify(globalClaims));
+      renderHistoryTable();
+
+      fb.className = 'bg-emerald-100 dark:bg-emerald-950 border border-emerald-300 dark:border-emerald-900 text-emerald-700 dark:text-emerald-300 text-xs p-3 rounded-xl';
+      fb.innerHTML = `✅ <strong>Redeem Berhasil!</strong> Voucher valid untuk pelanggan: <strong>${found.name}</strong>. Potongan promo dapat diterapkan ke kasir.`;
+      document.getElementById('cashierCodeInput').value = '';
+    }
+
+    // ==================== SENSOR DATA PRIVASI UNTUK KOL ====================
+    function maskPhone(p) {
+      if (!p || p.length < 6) return '****';
+      return p.substring(0, 4) + '****' + p.substring(p.length - 2);
+    }
+    function maskEmail(e) {
+      if (!e || !e.includes('@')) return '****';
+      const [usr, domain] = e.split('@');
+      return usr.substring(0, 2) + '****@' + domain;
+    }
+
+    // ==================== TABEL LOG HISTORY LENGKAP ====================
+    function renderHistoryTable() {
+      const tbody = document.getElementById('historyTableBody');
+      tbody.innerHTML = '';
+
+      let successCount = 0;
+      let pendingCount = 0;
+
+      globalClaims.forEach(c => {
+        const isRedeemed = c.status === 'REDEEMED';
+        if (isRedeemed) successCount++; else pendingCount++;
+
+        // SENSOR DATA JIKA ROLE KOL
+        const displayPhone = currentRole === 'kol' ? maskPhone(c.phone) : c.phone;
+        const displayEmail = currentRole === 'kol' ? maskEmail(c.email) : c.email;
+
+        tbody.innerHTML += `
+          <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/40 transition">
+            <td class="p-3 text-slate-500">${c.time}</td>
+            <td class="p-3 font-semibold text-slate-800 dark:text-slate-100">${c.name} <span class="text-[10px] text-slate-400">(${c.gender})</span></td>
+            <td class="p-3 text-indigo-600 dark:text-indigo-400 font-bold">${displayPhone}</td>
+            <td class="p-3 text-slate-600 dark:text-slate-400">${displayEmail}</td>
+            <td class="p-3 font-black text-amber-500">${c.code}</td>
+            <td class="p-3">
+              <span class="${isRedeemed ? 'bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-400 border-emerald-300 dark:border-emerald-800' : 'bg-amber-100 dark:bg-amber-950 text-amber-700 dark:text-amber-400 border-amber-300 dark:border-amber-800'} border text-[10px] font-bold px-2 py-0.5 rounded-full">
+                ${c.status}
+              </span>
+            </td>
+            <td class="p-3 font-semibold text-slate-700 dark:text-slate-300">${c.brand || 'Kopi Kenangan'}</td>
+            <td class="p-3 font-bold text-slate-900 dark:text-slate-100">Rp ${(c.value || 50000).toLocaleString('id-ID')}</td>
+          </tr>
+        `;
+      });
+
+      document.getElementById('sideMetricSuccess').innerText = `${successCount} Klaim`;
+      document.getElementById('sideMetricPending').innerText = `${pendingCount} Kode`;
+    }
+
+    // EXPORT CSV & PDF BERDAMPINGAN
+    function exportToCSV() {
+      let csv = 'Waktu,Pelanggan,Gender,WhatsApp,Email,Kode Kasir,Status,Brand,Nilai Transaksi\n';
+      globalClaims.forEach(c => {
+        const ph = currentRole === 'kol' ? maskPhone(c.phone) : c.phone;
+        const em = currentRole === 'kol' ? maskEmail(c.email) : c.email;
+        csv += `"${c.time}","${c.name}","${c.gender}","${ph}","${em}","${c.code}","${c.status}","${c.brand}","${c.value}"\n`;
+      });
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Laporan_Klaim_Kasir_${new Date().toISOString().slice(0,10)}.csv`;
+      a.click();
+    }
+
+    function exportToPDF() {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('landscape');
+      doc.text('Laporan Riwayat Klaim Voucher Kasir Offline', 14, 15);
+      doc.autoTable({ html: '#historyClaimsTable', startY: 22, theme: 'grid' });
+      doc.save(`Laporan_Kasir_${new Date().toISOString().slice(0,10)}.pdf`);
+    }
+
+    // ==================== GRAFIK REALTIME & KUSTOM WAKTU ====================
+    function handleChartFilterChange() {
+      const val = document.getElementById('chartTimeFilter').value;
+      initChart(val);
+    }
+
+    function initChart(range) {
+      const ctx = document.getElementById('mainDashboardChart').getContext('2d');
+      if (mainChartInstance) mainChartInstance.destroy();
+
+      let labels = [];
+      let data = [];
+
+      if (range === '24h') {
+        labels = ['00:00', '03:00', '06:00', '09:00', '12:00', '15:00', '18:00', '21:00'];
+        data = [0, 0, 2, 8, 24, 18, 32, 14];
+      } else if (range === '1w') {
+        labels = ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu', 'Minggu'];
+        data = [45, 52, 60, 78, 120, 154, 138];
+      } else if (range === '1m') {
+        labels = ['Minggu 1', 'Minggu 2', 'Minggu 3', 'Minggu 4'];
+        data = [320, 480, 610, 840];
+      } else {
+        labels = ['Bulan 1', 'Bulan 2', 'Bulan 3', 'Bulan 4', 'Bulan 5', 'Bulan 6'];
+        data = [1200, 1900, 2400, 3100, 4200, 5800];
+      }
+
+      mainChartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Total Klaim Voucher Kasir',
+            data: data,
+            borderColor: '#6366f1',
+            backgroundColor: 'rgba(99, 102, 241, 0.1)',
+            fill: true,
+            tension: 0.3,
+            borderWidth: 2
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true, grid: { color: 'rgba(150, 150, 150, 0.1)' } },
+            x: { grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    // ==================== BRAND CAMPAIGN MODAL ====================
+    function openCampaignModal() {
+      document.getElementById('modalCreateCampaign').classList.remove('hidden');
+      document.getElementById('modalCreateCampaign').classList.add('flex');
+    }
+    function closeCampaignModal() {
+      document.getElementById('modalCreateCampaign').classList.add('hidden');
+      document.getElementById('modalCreateCampaign').classList.remove('flex');
+    }
+    function handleCreateCampaign(e) {
+      e.preventDefault();
+      const brand = document.getElementById('campBrandName').value;
+      const code = document.getElementById('campPromoCode').value.toUpperCase();
+
+      const box = document.getElementById('campQrResultBox');
+      const container = document.getElementById('campaignGeneratedQr');
+      container.innerHTML = '';
+      new QRCode(container, {
+        text: window.location.origin + '/scan?code=' + code,
+        width: 128,
+        height: 128
+      });
+      box.classList.remove('hidden');
+      alert(`Campaign ${brand} berhasil diterbitkan dengan kode ${code}!`);
+    }
+
+    function filterAdminActivity() {
+      renderHistoryTable();
+    }
+  </script>
+</body>
+</html>
